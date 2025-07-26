@@ -12,7 +12,7 @@ households = st.number_input("Households", value=500)
 
 features = np.array([[income, rooms, bedrooms, population, households]])
 
-model = joblib.load("model.pkl")
+model = joblib.load("model/pipeline.pkl")
 prediction = model.predict(features)
 
 st.write("💰 Predicted House Price: $", int(prediction[0]))
