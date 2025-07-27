@@ -1,7 +1,13 @@
-
 import streamlit as st
 import joblib
 import numpy as np
+import sklearn
+import sklearn.compose._column_transformer as ct
+
+# 🩹 HOTFIX for loading pipeline.pkl created in Colab with sklearn 1.6.x
+class _RemainderColsList(list):
+    pass
+ct._RemainderColsList = _RemainderColsList
 
 st.title("🏠 California House Price Predictor")
 
@@ -13,6 +19,7 @@ households = st.number_input("Households", value=500)
 
 features = np.array([[income, rooms, bedrooms, population, households]])
 
+# 👇 Load the pipeline model AFTER hotfix
 model = joblib.load("model/pipeline.pkl")
 prediction = model.predict(features)
 
