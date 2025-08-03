@@ -3,6 +3,8 @@ import joblib
 import streamlit as st
 
 # Collect user input
+longitude = st.number_input("Longitude", min_value=-180.0, max_value=180.0, step=0.01)
+latitude = st.number_input("Latitude", min_value=-90.0, max_value=90.0, step=0.01)
 rooms = st.number_input("Total Rooms", min_value=1)
 bedrooms = st.number_input("Total Bedrooms", min_value=1)
 population = st.number_input("Population", min_value=1)
@@ -18,6 +20,8 @@ if st.button("🔍 Predict House Price"):
 
     # Create full dataframe
     data = pd.DataFrame({
+        "longitude": [longitude],
+        "latitude": [latitude],
         "total_rooms": [rooms],
         "total_bedrooms": [bedrooms],
         "population": [population],
