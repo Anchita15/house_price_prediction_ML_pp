@@ -1,36 +1,40 @@
-import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
+import joblib
+import streamlit as st
 
-# Title
-st.title("California Housing Prices Explorer")
 
-# Load data
-house_price_url = 'https://raw.githubusercontent.com/ageron/handson-ml/master/datasets/housing/housing.csv'
-prices = pd.read_csv(house_price_url)
+# Collect user input
+longitude = st.number_input("Longitude", min_value=-180.0, max_value=180.0, step=0.01)
+latitude = st.number_input("Latitude", min_value=-90.0, max_value=90.0, step=0.01)
+rooms = st.number_input("Total Rooms", min_value=1)
+bedrooms = st.number_input("Total Bedrooms", min_value=1)
+population = st.number_input("Population", min_value=1)
+households = st.number_input("Number of Households", min_value=1)
+income = st.number_input("Median Income (10k USD)", min_value=0.0, step=0.01)
+ocean = st.selectbox("Ocean Proximity", ['<1H OCEAN', 'INLAND', 'ISLAND', 'NEAR BAY', 'NEAR OCEAN'])
 
-# Show raw data
-st.subheader("Raw Data Preview")
-st.write(prices.head())
+if st.button("🔍 Predict House Price"):
+    # Add derived features
+    rooms_per_household = rooms / households
+    bedrooms_per_room = bedrooms / rooms
+    population_per_household = population / households
 
-# Dataset info
-st.subheader("Dataset Info")
-buffer = []
-prices.info(buf := buffer)
-st.text('\n'.join(buf))
+    # Create full dataframe
+    data = pd.DataFrame({
+        "longitude": [longitude],
+        "latitude": [latitude],
+        "total_rooms": [rooms],
+        "total_bedrooms": [bedrooms],
+        "population": [population],
+        "households": [households],
+        "median_income": [income],
+        "ocean_proximity": [ocean],
+        "rooms_per_household": [rooms_per_household],
+        "bedrooms_per_room": [bedrooms_per_room],
+        "population_per_household": [population_per_household]
+    })
 
-# Value counts for categorical column
-st.subheader("Ocean Proximity Distribution")
-st.bar_chart(prices['ocean_proximity'].value_counts())
-
-# Histogram of all numerical features
-st.subheader("Histograms of Numeric Columns")
-fig, ax = plt.subplots(figsize=(10, 8))
-prices.hist(bins=50, figsize=(10, 8), ax=ax)
-st.pyplot(fig)
-
-# Train-test split
-st.subheader("Train-Test Split")
-train_set, test_set = train_test_split(prices, test_size=0.2, random_state=42)
-st.success(f"Train set size: {len(train_set)}\nTest set size: {len(test_set)}")
+    # Load model and predict
+    model = joblib.load("model/pipeline.pkl")
+    prediction = model.predict(data)
+    st.success(f"💰 Predicted House Price: ${int(prediction[0])}")
