@@ -2,40 +2,22 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
-import io
 import requests
-
-# ---------- Helper: Download large file from Google Drive ----------
-def download_from_drive(file_id):
-    URL = "https://drive.google.com/uc?export=download"
-
-    session = requests.Session()
-    response = session.get(URL, params={'id': file_id}, stream=True)
-
-    def get_confirm_token(resp):
-        for key, value in resp.cookies.items():
-            if key.startswith('download_warning'):
-                return value
-        return None
-
-    token = get_confirm_token(response)
-    if token:
-        params = {'id': file_id, 'confirm': token}
-        response = session.get(URL, params=params, stream=True)
-
-    file_data = io.BytesIO()
-    for chunk in response.iter_content(32768):
-        if chunk:
-            file_data.write(chunk)
-    file_data.seek(0)
-
-    return pickle.load(file_data)
+import io
 
 # ---------- Load Model + Preprocessing ----------
 @st.cache_resource
 def load_model():
-    model = download_from_drive("14hE4hgNECHC1GL6DWzaCf3YUyyLqLBiN")
-    preprocess = download_from_drive("16OtGYOdr3NH8Ni1WSK9GPWe423G_HhaM")
+    def download_and_load(url):
+        response = requests.get(url)
+        response.raise_for_status()
+        return pickle.load(io.BytesIO(response.content))
+
+    model_url = "https://github.com/Anchita15/house_price_prediction_ML_pp/releases/download/v1.0/model.pkl"
+    preprocess_url = "https://github.com/Anchita15/house_price_prediction_ML_pp/releases/download/v1.0/preprocess.pkl"
+
+    model = download_and_load(model_url)
+    preprocess = download_and_load(preprocess_url)
     return preprocess, model
 
 preprocess, model = load_model()
@@ -43,46 +25,44 @@ preprocess, model = load_model()
 # ---------- UI Layout ----------
 st.set_page_config(page_title="🏠 House Price Predictor", layout="centered")
 st.title("🏠 House Price Prediction App")
-st.caption("Built with ML, Streamlit & Google Drive by [@Anchita15](https://github.com/Anchita15)")
+st.markdown("Enter the details below to predict the house price:")
 
-st.markdown("---")
+# ---------- User Input ----------
+area = st.number_input("Area (sq ft)", min_value=100, max_value=10000, value=1000)
+bedrooms = st.selectbox("Bedrooms", options=[1, 2, 3, 4, 5])
+bathrooms = st.selectbox("Bathrooms", options=[1, 2, 3, 4])
+stories = st.selectbox("Stories", options=[1, 2, 3, 4])
+mainroad = st.selectbox("Main Road", options=["Yes", "No"])
+guestroom = st.selectbox("Guest Room", options=["Yes", "No"])
+basement = st.selectbox("Basement", options=["Yes", "No"])
+hotwaterheating = st.selectbox("Hot Water Heating", options=["Yes", "No"])
+airconditioning = st.selectbox("Air Conditioning", options=["Yes", "No"])
+parking = st.selectbox("Parking Spaces", options=[0, 1, 2, 3])
+prefarea = st.selectbox("Preferred Area", options=["Yes", "No"])
+furnishingstatus = st.selectbox("Furnishing Status", options=["Furnished", "Semi-Furnished", "Unfurnished"])
 
-# ---------- Input Fields ----------
-col1, col2 = st.columns(2)
-
-with col1:
-    area = st.number_input("Area (sq ft)", min_value=200, max_value=10000, value=1200)
-    bedrooms = st.slider("Bedrooms", 1, 5, 3)
-    bathrooms = st.slider("Bathrooms", 1, 4, 2)
-
-with col2:
-    stories = st.selectbox("Number of Stories", [1, 2, 3, 4], index=1)
-    parking = st.slider("Parking Spaces", 0, 3, 1)
-    mainroad = st.selectbox("On Main Road?", ["yes", "no"])
-    guestroom = st.selectbox("Guest Room?", ["yes", "no"])
+# ---------- DataFrame Creation ----------
+input_data = pd.DataFrame({
+    'area': [area],
+    'bedrooms': [bedrooms],
+    'bathrooms': [bathrooms],
+    'stories': [stories],
+    'mainroad': [mainroad],
+    'guestroom': [guestroom],
+    'basement': [basement],
+    'hotwaterheating': [hotwaterheating],
+    'airconditioning': [airconditioning],
+    'parking': [parking],
+    'prefarea': [prefarea],
+    'furnishingstatus': [furnishingstatus]
+})
 
 # ---------- Prediction ----------
-if st.button("💰 Predict Price"):
-    input_data = pd.DataFrame({
-        'area': [area],
-        'bedrooms': [bedrooms],
-        'bathrooms': [bathrooms],
-        'stories': [stories],
-        'parking': [parking],
-        'mainroad': [mainroad],
-        'guestroom': [guestroom]
-    })
-
-    X_transformed = preprocess.transform(input_data)
-    prediction = model.predict(X_transformed)[0]
-
-    st.success(f"🏷️ Estimated Price: ₹ {int(prediction):,}")
-
-# ---------- Footer ----------
-st.markdown("---")
-st.markdown(
-    "<div style='text-align:center; font-size: 14px;'>"
-    "🚀 Made with ❤️ using Streamlit & XGBoost"
-    "</div>",
-    unsafe_allow_html=True
-)
+if st.button("Predict Price"):
+    try:
+        processed_input = preprocess.transform(input_data)
+        prediction = model.predict(processed_input)[0]
+        st.success(f"💰 Estimated House Price: ₹ {int(prediction):,}")
+    except Exception as e:
+        st.error("Something went wrong while predicting. Please check the inputs or try again.")
+        st.exception(e)
