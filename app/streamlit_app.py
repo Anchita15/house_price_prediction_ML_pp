@@ -1,62 +1,95 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import pickle
+import requests
+import io
 
-# Load model and preprocessing pipeline
+st.set_page_config(
+    page_title="House Price Prediction",
+    layout="centered",
+    initial_sidebar_state="auto"
+)
+
+# Apply a nice dark mode-friendly style
+st.markdown("""
+    <style>
+        html, body, [class*="css"] {
+            background-color: #0e1117;
+            color: #fafafa;
+        }
+        .stTextInput>div>div>input, .stSelectbox>div>div>div>input {
+            background-color: #262730;
+            color: white;
+        }
+        .stButton>button {
+            background-color: #1f77b4;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+
+# ---------- Load Model from Google Drive ----------
 @st.cache_data
 def load_model():
-    with open("model.pkl", "rb") as f:
-        model = pickle.load(f)
-    with open("preprocess.pkl", "rb") as f:
-        preprocess = pickle.load(f)
+    def download_from_drive(file_id: str):
+        url = f"https://drive.google.com/uc?id={file_id}"
+        resp = requests.get(url)
+        resp.raise_for_status()
+        return pickle.load(io.BytesIO(resp.content))
+
+    model = download_from_drive("14hE4hgNECHC1GL6DWzaCf3YUyyLqLBiN")         # model.pkl
+    preprocess = download_from_drive("16OtGYOdr3NH8Ni1WSK9GPWe423G_HhaM")    # preprocess.pkl
     return preprocess, model
+
 
 preprocess, model = load_model()
 
-st.set_page_config(
-    page_title="🏠 House Price Predictor",
-    layout="wide",
-    page_icon="🏡",
-)
 
-# 💫 Title Area
-st.markdown(
-    "<h1 style='text-align: center; color: #00f5d4;'>🏠 California House Price Predictor</h1>"
-    "<p style='text-align: center; color: gray;'>Enter home features to get an instant price prediction</p>",
-    unsafe_allow_html=True,
-)
+# ---------- UI Layout ----------
+st.title("🏡 House Price Prediction App")
 
-st.markdown("---")
+st.markdown("Fill in the property details below to get an estimated price.")
 
-# 📊 Sidebar Inputs
-st.sidebar.title("✨ Enter House Details")
+# Example Inputs — You can modify these based on your dataset features
+area = st.number_input("Area (sq ft)", min_value=500, max_value=10000, value=1500)
+bedrooms = st.slider("Number of Bedrooms", 1, 10, 3)
+bathrooms = st.slider("Number of Bathrooms", 1, 10, 2)
+stories = st.selectbox("Number of Stories", [1, 2, 3, 4])
+mainroad = st.selectbox("Is Main Road Facing?", ["Yes", "No"])
+guestroom = st.selectbox("Guest Room Available?", ["Yes", "No"])
+basement = st.selectbox("Has Basement?", ["Yes", "No"])
+hotwaterheating = st.selectbox("Hot Water Heating?", ["Yes", "No"])
+airconditioning = st.selectbox("Air Conditioning?", ["Yes", "No"])
+parking = st.slider("Parking Spaces", 0, 5, 1)
+prefarea = st.selectbox("Preferred Area?", ["Yes", "No"])
+furnishing = st.selectbox("Furnishing Status", ["Furnished", "Semi-Furnished", "Unfurnished"])
 
-median_income = st.sidebar.slider("💰 Median Income (in $10,000s)", 0.0, 15.0, 5.0)
-housing_median_age = st.sidebar.slider("🏗️ Median House Age", 1, 52, 20)
-total_rooms = st.sidebar.number_input("🚪 Total Rooms", min_value=1, value=2000)
-population = st.sidebar.number_input("👥 Population", min_value=1, value=3000)
-ocean_proximity = st.sidebar.selectbox(
-    "🌊 Ocean Proximity", ["<1H OCEAN", "INLAND", "ISLAND", "NEAR BAY", "NEAR OCEAN"]
-)
+if st.button("Predict Price 💰"):
+    try:
+        # Create DataFrame for preprocessing
+        input_df = pd.DataFrame({
+            "area": [area],
+            "bedrooms": [bedrooms],
+            "bathrooms": [bathrooms],
+            "stories": [stories],
+            "mainroad": [mainroad],
+            "guestroom": [guestroom],
+            "basement": [basement],
+            "hotwaterheating": [hotwaterheating],
+            "airconditioning": [airconditioning],
+            "parking": [parking],
+            "prefarea": [prefarea],
+            "furnishingstatus": [furnishing]
+        })
 
-# 👇 Input DataFrame
-input_data = pd.DataFrame([{
-    "median_income": median_income,
-    "housing_median_age": housing_median_age,
-    "total_rooms": total_rooms,
-    "population": population,
-    "ocean_proximity": ocean_proximity
-}])
+        transformed = preprocess.transform(input_df)
+        prediction = model.predict(transformed)[0]
 
-col1, col2 = st.columns([2, 1])
+        st.success(f"🏷️ Estimated House Price: ₹ {np.round(prediction, 2):,.2f}")
 
-with col1:
-    st.markdown("### 🧾 Model Input Preview")
-    st.dataframe(input_data, use_container_width=True)
-
-with col2:
-    st.markdown("### 🧠 Prediction Result")
-    if st.button("💡 Predict House Price", use_container_width=True):
-        X_proc = preprocess.transform(input_data)
-        prediction = model.predict(X_proc)[0]
-        st.success(f"🏡 **Estimated Price:** ${prediction:,.0f}")
+    except Exception as e:
+        st.error("⚠️ An error occurred while predicting. Please check input and try again.")
+        st.exception(e)
