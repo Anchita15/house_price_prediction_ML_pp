@@ -1,101 +1,118 @@
 # 🏡 House Price Prediction (California Housing Dataset)
 
-This project builds a machine learning model to predict median house prices in California using census data. It includes complete data analysis, preprocessing, feature engineering, and model training using Linear Regression — all done in Google Colab.
+An end-to-end Machine Learning project to predict **California median house prices** using census data.  
+This project includes **data analysis, preprocessing, feature engineering, model training**, and a **beautifully deployed web app** built with Streamlit.
 
 ---
 
-## 📌 Problem Statement
+## 🌐 Live App  
 
-Using the 1990 California census data, the goal is to predict the **median house value** for neighborhoods ("block groups") using features like population, median income, total rooms, and more.
-
----
-
-## 📁 Dataset
-
-- 📊 Source: [California Housing Dataset (Hands-On ML)](https://raw.githubusercontent.com/ageron/handson-ml/master/datasets/housing/housing.csv)
-- 🏘 20,640 entries
-- 10 attributes (9 numerical, 1 categorical)
+🔗 [Click here to try the app](https://housepricepredictionmlpp-jkpeappl7mkxhhkq4hnyxyf.streamlit.app/)
 
 ---
 
-## 🧠 Key Features Used
+## 📌 Problem Statement  
+
+Using the **1990 California Census data**, predict the median house value for neighborhoods ("block groups") based on features like **median income**, **population**, **total rooms**, and **ocean proximity**.
+
+---
+
+## 📁 Dataset  
+
+- **Source:** California Housing Dataset (Hands-On ML)  
+- 🏘 **20,640 entries**, 10 attributes (9 numerical, 1 categorical)
+
+---
+
+## 🧠 Key Features  
 
 - `median_income`
 - `housing_median_age`
 - `total_rooms`
 - `population`
-- `ocean_proximity` (categorical)
+- `ocean_proximity` *(categorical)*
 
 ---
 
-## 🧪 Data Preprocessing
+## 🧪 Data Preprocessing  
 
-- Handled missing values using **SimpleImputer**
-- Created new features:
-  - `rooms_per_household`
-  - `bedrooms_per_room`
-  - `population_per_household`
-- Converted categorical column using **OneHotEncoder**
-- Applied **StandardScaler** for normalization
-- Used **Stratified Sampling** based on income categories to ensure fair train-test split
-- Built preprocessing pipeline with **Pipeline** and **ColumnTransformer**
-
----
-
-## 📊 EDA & Visualization
-
-- Histograms for feature distributions
-- Scatter plot of house prices by location (longitude vs latitude)
-- Correlation matrix to find key predictors
-- Used `scatter_matrix()` to visualize relationships between top features
+- ✅ Handled missing values using **SimpleImputer**  
+- ✅ Created new features:  
+  - `rooms_per_household`  
+  - `bedrooms_per_room`  
+  - `population_per_household`  
+- ✅ Encoded categorical column using **OneHotEncoder**  
+- ✅ Applied **StandardScaler** for normalization  
+- ✅ Used **Stratified Sampling** to ensure fair train-test split  
+- ✅ Built a reusable preprocessing pipeline with **Pipeline** & **ColumnTransformer**
 
 ---
 
-## 🧮 Model Training
+## 📊 EDA & Visualization  
 
-- Model: **LinearRegression** from Scikit-Learn
-- Trained on processed data (`housing_prepared`)
-- Evaluated predictions on a test batch
+- 📈 Histograms for feature distributions  
+- 🗺️ Scatter plot of house prices by location (longitude vs latitude)  
+- 🔗 Correlation matrix to find key predictors  
+- 📑 `scatter_matrix()` to visualize relationships between top features  
 
-### 🧾 Sample Predictions:
-The model was tested on a few instances from the training set. Below are the predicted vs. actual median house values:
+---
+
+## 🧮 Model Training  
+
+- **Initial Model:** Linear Regression (Scikit-Learn)  
+- **Advanced Model (Web App):** XGBoost Regressor  
+- Trained on fully processed data  
+- Evaluated predictions on the test set  
+
+---
+
+## 🧾 Sample Predictions  
 
 | Row | Predicted ($) | Actual ($) |
-|-----|---------------|------------|
-| 1   | 85,658         | ~66,900     |
-| 2   | 305,493        | ~303,900    |
-| 3   | 152,056        | ~103,500    |
-| 4   | 186,096        | ~146,600    |
-| 5   | 244,551        | ~192,400    |
+|------|--------------|------------|
+| 1 | 85,658 | ~66,900 |
+| 2 | 305,493 | ~303,900 |
+| 3 | 152,056 | ~103,500 |
+| 4 | 186,096 | ~146,600 |
+| 5 | 244,551 | ~192,400 |
 
-> 💡 These predictions demonstrate the model’s ability to generalize on real data fairly well, with Linear Regression capturing overall trends.
-
-
----
-
-## 💡 Learnings
-
-- How to build a full ML pipeline from scratch
-- Importance of feature engineering
-- Why stratified sampling improves model fairness
-- How to analyze correlation and geospatial data
+💡 These predictions show good generalization and capture overall trends.
 
 ---
 
-## 🔧 Tools & Libraries
+## 💡 Learnings  
 
-- **Python** (Colab)
-- **Pandas**, **NumPy**, **Matplotlib**
-- **Scikit-Learn**: `Pipeline`, `ColumnTransformer`, `LinearRegression`, `StandardScaler`, etc.
-
----
-
-## 📎 Project Highlights
-
-✅ End-to-end pipeline built with reusable code  
-✅ Real-world data cleaning and visualization  
-✅ Clear model explainability using correlation and plots
+- Building a **full ML pipeline** from scratch  
+- **Feature engineering** to improve model performance  
+- Why **stratified sampling** improves fairness  
+- How to analyze **correlation** and **geospatial data**  
+- Deploying a real model as a **web app** for instant predictions  
 
 ---
 
-> ⭐ Star this repo if you found it helpful, or feel free to fork and enhance with advanced models like Random Forest or XGBoost!
+## 🔧 Tools & Libraries  
+
+- **Python (Colab + VSCode)**  
+- **Pandas, NumPy, Matplotlib, Seaborn**  
+- **Scikit-Learn** (Pipeline, ColumnTransformer, LinearRegression, StandardScaler)  
+- **XGBoost** (for production model)  
+- **Streamlit** (for web app UI)  
+
+---
+
+## 📷 Web App Preview  
+
+![App Screenshot](assets/Capture.PNG)
+
+---
+
+## 📎 Project Highlights  
+
+- ✅ **End-to-end pipeline** built with reusable code  
+- ✅ **Real-world data cleaning & visualization**  
+- ✅ **Beautiful Streamlit UI** with dark theme  
+- ✅ **Live Deployed App** with XGBoost predictions  
+
+---
+
+⭐ **Star this repo** if you found it helpful — or fork and extend with advanced models like Random Forest or Gradient Boosting!
