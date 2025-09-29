@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import pickle
 import requests
 import io
@@ -64,14 +63,12 @@ if st.button("📊 Predict Price"):
             'furnishingstatus': [furnishingstatus]
         })
 
-        # Show preview
-        st.markdown("### 🧾 Input Summary")
+        st.markdown("### 🔍 Input Summary")
         st.dataframe(input_df)
 
-        # Transform & predict
         transformed = preprocess.transform(input_df)
-        price = model.predict(transformed)[0]
-        st.success(f"💰 Estimated House Price: ₹ {int(price):,}")
-    
+        prediction = model.predict(transformed)[0]
+        st.success(f"💰 Predicted House Price: ₹ {int(prediction):,}")
+
     except Exception as e:
         st.error(f"❌ Prediction failed: {str(e)}")
